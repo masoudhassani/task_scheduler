@@ -27,23 +27,42 @@ recipes = {
            'sabayon': (('i',12),
                        ('i',6),
                        ('i',6),
-                       ('c',540))
+                       ('c',540)),
+           'test1':   (('i', 30),
+                       ('c', 50),
+                       ('i', 10),
+                       ('c', 300)),
+           'test2':   (('i', 20),
+                       ('c', 200),
+                       ('i', 30),
+                       ('c', 100),
+                       ('i', 70),
+                       ('c', 50),
+                       ('i', 30),
+                       ('c', 20)),
+           'test3':   (('i', 10),
+                       ('c', 100),
+                       ('i', 60),
+                       ('c', 50),
+                       ('i', 10),
+                       ('c', 100))                      
 }
 
-order = ['asparagus_soup', 0, 'sabayon', 'chili_con_carne', 'chili_con_carne']
+order = ['test1', 0, 'test2', 0, 'test3']
 
 cooking_machines = [None]*num_machines
 for i in range(num_machines):
     if order[i] != 0:
         cooking_machines[i] = CookingMachine(recipe=recipes[order[i]])
         cooking_machines[i].find_next_cooking()
-        print(cooking_machines[i].processed_recipe)
+        print(cooking_machines[i].current_step)
+        print(cooking_machines[i].current_task)
     else:
         cooking_machines[i] = CookingMachine(recipe=None)
         
-    print(cooking_machines[i].advantage)
+    
 
 dispenser = Dispenser(cooking_machines) 
-idx = dispenser.schedule()
-print(idx)   
+print(dispenser.max_ideal_cooking_time, dispenser.ref_machine)
+   
                        
