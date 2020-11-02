@@ -48,21 +48,25 @@ recipes = {
                        ('c', 100))                      
 }
 
-order = ['test1', 0, 'test2', 0, 'test3']
+order = ['asparagus_soup', 0, 'chili_con_carne', 0, 'sabayon']
 
 cooking_machines = [None]*num_machines
 for i in range(num_machines):
     if order[i] != 0:
-        cooking_machines[i] = CookingMachine(recipe=recipes[order[i]])
+        cooking_machines[i] = CookingMachine(recipe=recipes[order[i]], index=i, name=order[i])
         cooking_machines[i].find_next_cooking()
         print(cooking_machines[i].current_step)
         print(cooking_machines[i].current_task)
     else:
         cooking_machines[i] = CookingMachine(recipe=None)
         
-    
-
 dispenser = Dispenser(cooking_machines) 
 print(dispenser.max_ideal_cooking_time, dispenser.ref_machine)
+
+done = False 
+while not done:
+    done = dispenser.operate()
+    
+print('scheduling completed')
    
                        
