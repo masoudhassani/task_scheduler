@@ -6,8 +6,9 @@ class Dispenser:
         self.max_ideal_cooking_time = 0   # sum of all cooking steps for a machine
         self.ref_machine = None  # reference machine is the one that has the max ideal cooking time
         self.current_machine = None # the cooking machine that is doing the current task
-        self.find_max_ideal_cooking_time()
         self.done = False
+        self.task_schedule = []
+        self.find_max_ideal_cooking_time()
             
     def find_max_ideal_cooking_time(self):
         for i in range(self.num_machines):
@@ -97,8 +98,22 @@ class Dispenser:
                     # only check machines that have orders
                     if self.machines[i].has_order:
                         for j in range(self.machines[i].num_steps):
-                            self.machines[i].task_start_time[j] += abs(min_start_time)             
-                             
+                            self.machines[i].task_start_time[j] += abs(min_start_time)    
+                            
+            # create the task schedule  
+            # task schedule is [machine_idx, recipe name, start time, task type, task time]       
+            for i in range(self.num_machines):
+                # only check machines that have orders
+                if self.machines[i].has_order:
+                    for j in range(self.machines[i].num_steps):
+                        self.task_schedule.append([i, self.machines[i].recipe_name,
+                                                   self.machines[i].task_start_time[j],
+                                                   self.machines[i].processed_recipe[j][0],
+                                                   self.machines[i].processed_recipe[j][1]])
+            
+            # sort the task schedule based on the task start time 
+            self.task_schedule = sorted(self.task_schedule, key=lambda l:l[2])            
+                                        
             return self.done        
         
         # update the amount of time reduction based on the task of current machine 
@@ -120,7 +135,7 @@ class Dispenser:
         print('-------------------------------')
         #################################
          
-        # update the current task of all machines
+        # update the current task of all machines but the current machine
         for i in range(self.num_machines):
             # only check machines that have active orders
             if self.machines[i].is_active and self.machines[i].has_order:

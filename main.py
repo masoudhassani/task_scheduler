@@ -1,4 +1,5 @@
 from modules import CookingMachine, Dispenser
+from modules import gantt_chart, read_recipes
 
 num_machines = 5
 recipes = {
@@ -69,7 +70,7 @@ recipes = {
 }
 
 order = ['asparagus_soup', 0, 'sabayon', 'sabayon', 0]
-order = ['test1', 0, 'test2', 0, 'test3']
+# order = ['test1', 0, 'test2', 0, 'test3']
 
 # initialize cooking machines
 cooking_machines = [None]*num_machines
@@ -87,6 +88,9 @@ dispenser = Dispenser(cooking_machines)
 done = False 
 while not done:
     done = dispenser.operate()
+
+# plot the gantt chart
+gantt_chart(dispenser.task_schedule)
 
 # print some stuff
 for i in range(num_machines):
