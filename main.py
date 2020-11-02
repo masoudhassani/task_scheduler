@@ -69,7 +69,7 @@ recipes = {
                        ('c', 100))                      
 }
 
-order = ['asparagus_soup', 0, 'sabayon', 'sabayon', 0]
+order = ['asparagus_soup', 0, 'sabayon', 'sabayon', 'mushroom_risotto']
 # order = ['test1', 0, 'test2', 0, 'test3']
 
 # initialize cooking machines
