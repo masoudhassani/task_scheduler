@@ -17,8 +17,19 @@ class Dispenser:
         self.max_ideal_cooking_time = max(self.ideal_cooking_times)
         idx = self.ideal_cooking_times.index(self.max_ideal_cooking_time)
         self.ref_machine = self.machines[idx]
+        self.ref_remaining_time = self.machines[idx].remaining_time
         self.current_machine = self.machines[idx]
 
+        # print some debug info
+        print('status of all active machines:')
+        for i in range(self.num_machines):
+            if self.machines[i].has_order:
+                print(i, self.machines[i].current_task, 
+                        round(self.machines[i].remaining_time, 1),
+                        self.machines[i].task_start_time)
+        print('-------------------------------')
+        # ############################
+        
     def select_machine(self):        
         lst = [None]*self.num_machines
         # update the remaining time of current task for all active machines
@@ -53,9 +64,9 @@ class Dispenser:
                 for i in range(self.num_machines):
                     if self.machines[i].is_active and self.machines[i].has_order:
                         temp.append(i)
-            print(temp)
+                        
             if len(temp) > 0:
-                max_rem = 0
+                max_rem = -10000
                 for i in temp:
                     if self.machines[i].remaining_time - self.machines[i].current_task[1] > max_rem:
                         max_rem = self.machines[i].remaining_time - self.machines[i].current_task[1]
@@ -65,24 +76,50 @@ class Dispenser:
             else:             
                 self.current_machine = self.machines[min_idx] 
         
-    def operate(self): 
+    def operate(self):                         
+        # select a machine 
+        self.select_machine()
+
+        # if order is done for all machines, find the smallet negative start time
+        # for the first task of all machines
+        if self.done:
+            min_start_time = 0
+            # update the current task of all machines
+            for i in range(self.num_machines):
+                # only check machines that have orders
+                if self.machines[i].has_order and self.machines[i].task_start_time[0] < min_start_time:
+                    min_start_time = self.machines[i].task_start_time[0]
+            
+            # offset all task start times based on min_start_time
+            if min_start_time < 0:
+                # update the current task of all machines
+                for i in range(self.num_machines):
+                    # only check machines that have orders
+                    if self.machines[i].has_order:
+                        for j in range(self.machines[i].num_steps):
+                            self.machines[i].task_start_time[j] += abs(min_start_time)             
+                             
+            return self.done        
+        
+        # update the amount of time reduction based on the task of current machine 
+        reduction = self.current_machine.current_task[1]        
+
+        # update the current task of current machine 
+        self.current_machine.update_current_task(
+                                        reduction=reduction , time=self.ref_remaining_time)
+
+        self.ref_remaining_time -= reduction
+ 
+        # print some debug stuff
         print('select ->', self.current_machine.index)
         for i in range(self.num_machines):
             if self.machines[i].has_order:
                 print(i, self.machines[i].current_task, 
-                        self.machines[i].remaining_time,
+                        round(self.machines[i].remaining_time, 1),
                         self.machines[i].task_start_time)
         print('-------------------------------')
-        
-        # select a machine 
-        self.select_machine()
-           
-        # update the task of current machine 
-        reduction = self.current_machine.current_task[1] 
-        ref_remaining_time = self.ref_machine.remaining_time 
-        self.current_machine.update_current_task(
-                                        reduction=reduction , time=ref_remaining_time)
-        
+        #################################
+         
         # update the current task of all machines
         for i in range(self.num_machines):
             # only check machines that have active orders
@@ -90,17 +127,7 @@ class Dispenser:
                 # if the machines other than the current machine have cooking step, do it
                 # otherwise do not do it
                 if i != self.current_machine.index and self.machines[i].current_task[0] == 'c':
-                    self.machines[i].update_current_task(reduction=reduction, time=ref_remaining_time)                        
+                    self.machines[i].update_current_task(reduction=reduction, time=self.ref_remaining_time)                        
         
         return self.done
            
-    def schedule(self):
-        advantage = [0]*self.num_machines
-        for i in range(self.num_machines):
-            if self.machines[i].is_active:
-                self.machines[i].find_next_cooking()
-                advantage[i] = self.machines[i].advantage
-                
-        selected_machine = advantage.index(max(advantage))
-        
-        return selected_machine

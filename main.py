@@ -28,6 +28,26 @@ recipes = {
                        ('i',6),
                        ('i',6),
                        ('c',540)),
+           'mushroom_risotto' : (('i',3.5),
+                                ('i',0.5),
+                                ('i',11),
+                                ('c',8),
+                                ('c',180),
+                                ('i',25),
+                                ('c',180),
+                                ('i',10),
+                                ('c',10),
+                                ('i',0.5),
+                                ('i',1.5),
+                                ('i',0.2),
+                                ('i',40),
+                                ('c',900),
+                                ('i',15),
+                                ('c',7),
+                                ('i',15),
+                                ('c',180),
+                                ('i',5),
+                                ('c',30)),           
            'test1':   (('i', 30),
                        ('c', 50),
                        ('i', 10),
@@ -48,25 +68,31 @@ recipes = {
                        ('c', 100))                      
 }
 
-order = ['asparagus_soup', 0, 'chili_con_carne', 0, 'sabayon']
+order = ['asparagus_soup', 0, 'sabayon', 'sabayon', 0]
+order = ['test1', 0, 'test2', 0, 'test3']
 
+# initialize cooking machines
 cooking_machines = [None]*num_machines
 for i in range(num_machines):
     if order[i] != 0:
         cooking_machines[i] = CookingMachine(recipe=recipes[order[i]], index=i, name=order[i])
-        cooking_machines[i].find_next_cooking()
-        print(cooking_machines[i].current_step)
-        print(cooking_machines[i].current_task)
+
     else:
         cooking_machines[i] = CookingMachine(recipe=None)
-        
-dispenser = Dispenser(cooking_machines) 
-print(dispenser.max_ideal_cooking_time, dispenser.ref_machine)
 
+# initialize the dispenser         
+dispenser = Dispenser(cooking_machines) 
+
+# go throught the order from the end to the start 
 done = False 
 while not done:
     done = dispenser.operate()
-    
+
+# print some stuff
+for i in range(num_machines):
+    if cooking_machines[i].has_order:
+        print(i, cooking_machines[i].task_start_time)
+print('-------------------------------')    
 print('scheduling completed')
    
                        

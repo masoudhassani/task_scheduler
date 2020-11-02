@@ -1,20 +1,12 @@
 class CookingMachine:
     def __init__(self, recipe=None, index=None, name=''):
         self.index = index
-        self.next_task = 0
         self.current_step = 0    # step number in recipe starting from 0
         self.current_task = ('i', 0)   # (task_type, remaining time of current task)
-        self.elapsed_time = 0
         self.ideal_cooking_time = 0
-        self.current_step = 0
-        self.current_state = 0  #idle:0, ing:1, cook:2
         self.recipe = recipe            
         self.processed_recipe = []
-        self.next_cooking_duration = 0
-        self.time_to_next_cooking = 0
-        self.advantage = 0   # next_cooking_duration-time_to_next_cooking
         self.done = False   # becomes true when cooking the recipe is done
-        self.start_offset = 0  # non-zero if algorithm determines the recipe need to start earlier
         if recipe != None:
             self.recipe_name = name
             self.has_order = True    #becomes true when the machine has an order
@@ -64,36 +56,17 @@ class CookingMachine:
         self.current_step = self.num_steps - 1
         self.current_task = [self.processed_recipe[self.current_step][0], 
                              self.processed_recipe[self.current_step][1]]
-        self.task_start_time = [0]*self.num_steps
-          
-    '''
-    finds the duration of the next cooking task
-    finds the time needed to the next cooking task
-    '''                            
-    def find_next_cooking(self):
-        t = 0
-        next_cooking_found = False
-        if self.has_order:
-            for j in range(self.current_step, self.num_steps):
-                if self.processed_recipe[j][0] == 'i':
-                    t += self.processed_recipe[j][1]
-                else:
-                    self.next_cooking_period = self.processed_recipe[j][1]
-                    self.time_to_next_cooking = t
-                    next_cooking_found = True 
-                if next_cooking_found:
-                    break
-            
-            self.advantage = self.next_cooking_period - self.time_to_next_cooking   
+        self.task_start_time = [0]*self.num_steps  
         
     def update_current_task(self, reduction, time):
         r = self.current_task[1]
         
         # if the current step is done
-        if r - reduction == 0:
-            self.task_start_time[self.current_step] = time - reduction    # update the task start time
+        if (r - reduction) < 0.001:
+            self.task_start_time[self.current_step] = round(time - reduction,1)    # update the task start time
             
             # if this is the first step of recipe which is the end of algorithm
+            print(self.current_step)
             if self.current_step == 0:
                 self.is_active = False             
                 self.remaining_time = 0
@@ -116,18 +89,17 @@ class CookingMachine:
         else:
             # if this is the first step of recipe which is the end of algorithm
             if self.current_step == 0:
-                self.start_offset = -(r - reduction)
                 self.is_active = False
                 self.task_start_time[self.current_step] = 0
                 self.remaining_time = 0
                 
             # if in the middle of recipe 
             else:
+                self.task_start_time[self.current_step] = round(time - r,1)    # update the task start time  
+                self.current_step -= 1
                 self.current_task = [self.processed_recipe[self.current_step][0], 
                                     self.processed_recipe[self.current_step][1]]  
-                self.remaining_time -= reduction     
-                self.task_start_time[self.current_step] = time - r    # update the task start time                           
-                self.current_step -= 1
+                self.remaining_time -= r
                 print('exeption for food {} at index {}'.format(self.recipe_name, self.index))
                 
         return self.is_active
