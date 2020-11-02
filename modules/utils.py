@@ -3,10 +3,8 @@ def read_recipes(recipes):
 
 def gantt_chart(tasks):
     # tasks is [machine_idx, recipe name, start time, task type, task time]
-    import plotly.express as px
     import plotly.figure_factory as ff
     import pandas as pd 
-    import numpy as np
     
     df = pd.DataFrame(columns=['Task', 'Start', 'Finish', 'Resource'])
     
