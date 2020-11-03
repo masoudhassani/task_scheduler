@@ -9,8 +9,8 @@ def create_task_schedule(num_machines, recipes, order, include_time=True):
     # initialize cooking machines
     cooking_machines = [None]*num_machines
     for i in range(num_machines):
+        # if order includes completion time
         if include_time:
-            print(order[i])
             if order[i] != 0:
                 cooking_machines[i] = CookingMachine(recipe=recipes[order[i][0]], 
                                                     index=i, name=order[i][0],
@@ -19,6 +19,7 @@ def create_task_schedule(num_machines, recipes, order, include_time=True):
             else:
                 cooking_machines[i] = CookingMachine(recipe=None)
         
+        # if order does not include completion time
         else:
             if order[i] != 0:
                 cooking_machines[i] = CookingMachine(recipe=recipes[order[i]], 
