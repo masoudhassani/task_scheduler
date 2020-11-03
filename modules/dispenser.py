@@ -8,9 +8,13 @@ class Dispenser:
         self.current_machine = None # the cooking machine that is doing the current task
         self.done = False
         self.task_schedule = []
-        self.find_max_ideal_cooking_time()
-            
-    def find_max_ideal_cooking_time(self):
+        self._find_max_ideal_cooking_time()
+    
+    '''
+    function to find the idea l cooking time of all recipes
+    and find the maximum between them
+    '''        
+    def _find_max_ideal_cooking_time(self):
         for i in range(self.num_machines):
             if self.machines[i].has_order:
                 self.ideal_cooking_times[i] = self.machines[i].ideal_cooking_time
@@ -30,8 +34,17 @@ class Dispenser:
                         self.machines[i].task_start_time)
         print('-------------------------------')
         # ############################
-        
-    def select_machine(self):        
+    
+    '''
+    logic to prioritize a cooking machine between all active ones
+    the logic is defined as:
+    - select the machine with minimum remaining time of current step
+    - if other machines than the selected one do not have a current ingredient step, 
+        do the step of the selected machine
+    - if there is ingredient step other than the selected one, choose the machine with
+        max remaining time
+    '''    
+    def _select_machine(self):        
         lst = [None]*self.num_machines
         # update the remaining time of current task for all active machines
         for i in range(self.num_machines):
@@ -76,10 +89,15 @@ class Dispenser:
             # if no other machine has ingredient step, selecet min_idx machine 
             else:             
                 self.current_machine = self.machines[min_idx] 
-        
-    def operate(self):                         
+    
+    '''
+    main funtion which should be called in a loop until it returns True
+    - it selects the cooking machine to do the operation 
+    - it updates the remaining time and current task of all cooking machines
+    '''    
+    def schedule(self):                         
         # select a machine 
-        self.select_machine()
+        self._select_machine()
 
         # if order is done for all machines, find the smallet negative start time
         # for the first task of all machines

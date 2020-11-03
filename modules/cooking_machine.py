@@ -66,7 +66,6 @@ class CookingMachine:
             self.task_start_time[self.current_step] = round(time - reduction,1)    # update the task start time
             
             # if this is the first step of recipe which is the end of algorithm
-            print(self.current_step)
             if self.current_step == 0:
                 self.is_active = False             
                 self.remaining_time = 0
