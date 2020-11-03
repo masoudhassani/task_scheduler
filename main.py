@@ -46,12 +46,14 @@ def create_task_schedule(num_machines, recipes, order, include_time=True):
     
     return dispenser.task_schedule
 
+# ####################################
+# parameters
 num_machines = 5
-include_time = False
+include_time = True
 recipes = return_recipes()
-order = ['asparagus_soup', 'carrot_soup', 'sabayon', 0, 'mushroom_risotto']
-# order = [('asparagus_soup',600), ('carrot_soup',1200), ('sabayon',1200)
-#          , ('sabayon',1800), ('mushroom_risotto',400)]
+# order = ['asparagus_soup', 'carrot_soup', 'sabayon', 0, 'mushroom_risotto']
+order = [('asparagus_soup',600), ('carrot_soup',1200), ('sabayon',1200)
+         , ('sabayon',1800), ('mushroom_risotto',400)]
 # order = [('asparagus_soup',600), ('carrot_soup',1200), 0, ('sabayon',1800), 0]
 # order = ['test1', 0, 'test2', 0, 'test3']
 
