@@ -1,5 +1,5 @@
 class CookingMachine:
-    def __init__(self, recipe=None, index=None, name=''):
+    def __init__(self, recipe=None, index=None, name='', finish_time=0):
         self.index = index
         self.current_step = 0    # step number in recipe starting from 0
         self.current_task = ('i', 0)   # (task_type, remaining time of current task)
@@ -16,8 +16,8 @@ class CookingMachine:
             self.num_steps = 0
             self.has_order = False      
         self.is_active = True   # becomes false when order is complete  
+        self.finish_time = finish_time
         
-
     '''
     read the order and assign it to cooking machines.
     combine cooking steps together
@@ -57,7 +57,22 @@ class CookingMachine:
         self.current_task = [self.processed_recipe[self.current_step][0], 
                              self.processed_recipe[self.current_step][1]]
         self.task_start_time = [0]*self.num_steps  
-        
+    
+    '''
+    this function is called when the order includes expected completion time
+    in that case a fake step is added to the whole recipe to ensure the finsih time
+    '''
+    def add_fake_step(self, task):
+        self.processed_recipe.append(task)  
+        self.current_step = self.num_steps
+        self.current_task = [task[0], task[1]]
+        self.num_steps += 1
+        self.task_start_time = [0]*(self.num_steps) 
+        self.remaining_time += task[1]  
+    
+    '''
+    main function to update the current task and remaining time
+    '''              
     def update_current_task(self, reduction, time):
         r = self.current_task[1]
         

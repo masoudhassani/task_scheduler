@@ -1,5 +1,5 @@
 class Dispenser:
-    def __init__(self, cooking_machines):
+    def __init__(self, cooking_machines, include_time=False):
         self.num_machines = len(cooking_machines)
         self.machines = cooking_machines
         self.ideal_cooking_times = [0]*self.num_machines
@@ -8,6 +8,9 @@ class Dispenser:
         self.current_machine = None # the cooking machine that is doing the current task
         self.done = False
         self.task_schedule = []
+        self.include_time = include_time
+        self.finish_time_offset = [0]*self.num_machines
+        self.ideal_cooking_time_offset = []
         self._find_max_ideal_cooking_time()
     
     '''
@@ -15,15 +18,42 @@ class Dispenser:
     and find the maximum between them
     '''        
     def _find_max_ideal_cooking_time(self):
-        for i in range(self.num_machines):
-            if self.machines[i].has_order:
-                self.ideal_cooking_times[i] = self.machines[i].ideal_cooking_time
+        # if the order does not include expected finish time
+        if not self.include_time:
+            for i in range(self.num_machines):
+                if self.machines[i].has_order:
+                    self.ideal_cooking_times[i] = self.machines[i].ideal_cooking_time
+                
+            self.max_ideal_cooking_time = max(self.ideal_cooking_times)
+            idx = self.ideal_cooking_times.index(self.max_ideal_cooking_time)
+            self.ref_machine = self.machines[idx]
+            self.ref_remaining_time = self.machines[idx].remaining_time
+            self.current_machine = self.machines[idx]
+        
+        # if the order includes finish time
+        else:
+            # find the finish time offset 
+            lst = [None]*self.num_machines
+            for i in range(self.num_machines):
+                if self.machines[i].has_order:
+                    lst[i] = self.machines[i].finish_time
+                    
+            max_finish_time = max(x for x in lst if x is not None)
+            max_finish_time_index = lst.index(max_finish_time)
+
+            for i in range(self.num_machines):
+                if self.machines[i].has_order:
+                    self.finish_time_offset[i] = (self.machines[i].finish_time - self.machines[max_finish_time_index].finish_time)
+                                                    
+            print(self.finish_time_offset)
             
-        self.max_ideal_cooking_time = max(self.ideal_cooking_times)
-        idx = self.ideal_cooking_times.index(self.max_ideal_cooking_time)
-        self.ref_machine = self.machines[idx]
-        self.ref_remaining_time = self.machines[idx].remaining_time
-        self.current_machine = self.machines[idx]
+            for i in range(self.num_machines):
+                if self.machines[i].has_order:
+                    self.machines[i].add_fake_step(('c',abs(self.finish_time_offset[i])))
+
+            self.ref_machine = self.machines[max_finish_time_index]
+            self.ref_remaining_time = self.machines[max_finish_time_index].remaining_time
+            self.current_machine = self.machines[max_finish_time_index]            
 
         # print some debug info
         print('status of all active machines:')
@@ -89,7 +119,7 @@ class Dispenser:
             # if no other machine has ingredient step, selecet min_idx machine 
             else:             
                 self.current_machine = self.machines[min_idx] 
-    
+        
     '''
     main funtion which should be called in a loop until it returns True
     - it selects the cooking machine to do the operation 
@@ -123,7 +153,11 @@ class Dispenser:
             for i in range(self.num_machines):
                 # only check machines that have orders
                 if self.machines[i].has_order:
-                    for j in range(self.machines[i].num_steps):
+                    if self.include_time:
+                        n = self.machines[i].num_steps - 1
+                    else:
+                        n = self.machines[i].num_steps
+                    for j in range(n):
                         self.task_schedule.append([i, self.machines[i].recipe_name,
                                                    self.machines[i].task_start_time[j],
                                                    self.machines[i].processed_recipe[j][0],
